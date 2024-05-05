@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.backend.bankingapp.accountMapper.AccountMapper.*;
@@ -19,7 +20,6 @@ public class AccountServiceImpl implements AccountService{
     @Override
     public AccountDto createAccount(AccountDto accountDto) {
        Account account = mapperToAccount(accountDto);
-       accountRepository.save(account);
        return mapperToAccountDto(accountRepository.save(account));
     }
 
@@ -38,12 +38,15 @@ public class AccountServiceImpl implements AccountService{
                 .orElseThrow(()->new RuntimeException("Account does not exists"));
 
         double total = account.getBalance()+ amount;
-        account.setBalance(total);
-        Account savedAccount = accountRepository.save(account);
-        return mapperToAccountDto(savedAccount);
-    }
 
-    @Override
+        Optional<Account> accountOptionalDb = accountRepository.findById(id);
+        Account account1 = accountOptionalDb.get();
+        account1.setBalance(total);
+       // Account savedAccount = new Account();
+        //accountRepository.save(account);
+        return mapperToAccountDto(accountRepository.save(account));
+    }
+     @Override
     public AccountDto withdraw(Long id, double amount) {
         Account account=  accountRepository
                 .findById(id)
